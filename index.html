@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MapPath - Shortest Path Finder</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <style>
+        /* Main layout container */
+        .layout-container {
+            display: flex;
+            flex-direction: row;
+            height: 100vh; /* Full viewport height */
+            font-family: Arial, sans-serif;
+        }
+
+        /* Left section for the form */
+        .form-container {
+            flex: 1; /* 1/3 of the screen */
+            max-width: 33%;
+            padding: 20px;
+            border-right: 1px solid #ccc;
+            background-color: #f9f9f9;
+            overflow-y: auto;
+        }
+
+        /* Right section for the map */
+        #map {
+            flex: 2; /* 2/3 of the screen */
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Header styling */
+        header h1 {
+            font-size: 28px; /* Larger font size for the title */
+            font-weight: bold;
+            color: #333;
+        }
+
+        header img {
+            margin-right: 10px;
+        }
+
+        /* General styling for the form */
+        .form-container h1 {
+            font-size: 24px; /* Match the design */
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-container label {
+            display: block;
+            font-size: 16px; /* Adjust label font size */
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-container select {
+            width: 100%; /* Đảm bảo dropdown chiếm toàn bộ chiều rộng */
+            padding: 10px; /* Khoảng cách bên trong dropdown */
+            border: 1px solid #ddd; /* Viền dropdown */
+            border-radius: 5px; /* Bo góc dropdown */
+            font-size: 16px; /* Kích thước chữ trong dropdown */
+            margin-bottom: 15px; /* Khoảng cách giữa dropdown và phần tử tiếp theo */
+            appearance: none; /* Loại bỏ giao diện mặc định của dropdown */
+            background: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 5"><path fill="black" d="M2 5L0 0h4z"/></svg>') no-repeat right 10px center;
+            background-size: 10px; /* Kích thước mũi tên */
+        }
+
+        .form-container select:focus {
+            outline: none; /* Loại bỏ viền mặc định khi focus */
+            border-color: #4CAF50; /* Đổi màu viền khi focus */
+        }
+
+        .form-container button {
+            margin-bottom: 15px;
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px; /* Match input and button font size */
+        }
+
+        .form-container label {
+            font-size: 16px; /* Adjust label font size */
+            font-weight: normal; /* Match the design */
+            display: flex; /* Use flexbox for alignment */
+            align-items: center; /* Vertically align checkbox and text */
+            margin-bottom: 15px; /* Add spacing between rows */
+        }
+
+        .form-container input[type="checkbox"] {
+            width: 20px; /* Increase checkbox size */
+            height: 20px; /* Increase checkbox size */
+            margin-right: 10px; /* Add spacing between checkbox and label */
+        }
+
+        .form-container button {
+            background-color: #28a745;
+            color: white;
+            font-size: 18px; /* Larger font size for the button */
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .form-container button:hover {
+            background-color: #218838;
+        }
+
+        #error {
+            color: red;
+            font-weight: bold;
+            font-size: 14px; /* Smaller font size for error messages */
+        }
+
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+        }
+
+        #result h2 {
+            font-size: 20px; /* Adjust result title font size */
+            margin-bottom: 10px;
+        }
+
+        #result p {
+            font-size: 16px; /* Adjust result details font size */
+            margin: 5px 0;
+        }
+
+        .icon {
+            margin-right: 10px;
+        }
+    </style>
+
+
+</head>
+<body>
+    <!-- Header Section -->
+    <header style="display: flex; align-items: center; justify-content: space-between; padding: 20px; background-color: #f9f9f9; border-bottom: 1px solid #ddd;">
+        <div style="display: flex; align-items: center;">
+            <img src="https://img.icons8.com/ios-filled/50/4CAF50/marker.png" alt="MapPath Icon" style="width: 30px; height: 30px; margin-right: 10px;">
+            <h1 style="font-size: 24px; margin: 0; color: #333;">MapPath</h1>
+        </div>
+        <div>
+            <img src="https://img.icons8.com/ios-filled/50/000000/user.png" alt="User Icon" style="width: 30px; height: 30px;">
+        </div>
+    </header>
+
+    <!-- Main Layout -->
+
+    <div class="layout-container" style="padding-top: 20px;">
+        <!-- Left: Form Section -->
+        <div class="form-container">
+            <h1>Find the Shortest Path</h1>
+            <form id="path-form">
+
+                <div>
+                    <label for="source"><span class="icon">📍</span>Source Location:</label>
+                    <select id="source" name="source" required data-source-url="/get_nodes">
+                        <option value="" disabled selected>Select Source</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="target"><span class="icon">📍</span>Destination Location:</label>
+                    <select id="target" name="target" required data-source-url="/get_nodes">
+                        <option value="" disabled selected>Select Destination</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>
+                        <input type="checkbox" id="consider_traffic_time" name="consider_traffic_time">
+                        Consider Travel Time
+                    </label>
+                </div>
+
+                <div>
+                    <label>
+                        <input type="checkbox" id="consider_traffic_density" name="consider_traffic_density">
+                        Consider Traffic Density
+                    </label>
+                </div>
+
+                <div>
+                    <button type="submit">Find Path</button>
+                </div>
+            </form>
+
+            <!-- Error Message -->
+            <p id="error"></p>
+
+            <!-- Result Section -->
+            <div id="result">
+                <h2>Path:</h2>
+                <p id="path"></p>
+                <p id="distance"></p>
+                <p id="estimated-time"></p>
+                <p id="traffic-status"></p>
+            </div>
+        </div>
+
+        <!-- Right: Map Section -->
+        <div id="map"></div>
+    </div>
+
+    <div>
+    <label>
+        <input type="checkbox" id="consider_traffic_time" name="consider_traffic_time">
+        Consider Travel Time
+    </label>
+
+</div>
+
+    
+
+    <!-- Injected Data -->
+    <script id="map-data" type="application/json">
+        {
+            "nodes": {{ nodes | tojson | safe }},
+            "edges": {{ edges | tojson | safe }}
+        }
+    </script>
+
+    <!-- Main Script -->
+    <script>
+    window.onload = function () {
+        try {
+            const rawData = JSON.parse(document.getElementById("map-data").textContent);
+            const nodes = rawData.nodes;
+            const edges = rawData.edges;
+
+            const map = L.map('map').setView([10.7454, 106.7052], 14);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            document.getElementById('path-form').addEventListener('submit', async function (event) {
+                event.preventDefault();
+
+                const source = document.getElementById('source').value;
+                const target = document.getElementById('target').value;
+                const considerTrafficTime = document.getElementById('consider_traffic_time').checked;
+                const considerTrafficDensity = document.getElementById('consider_traffic_density').checked;
+
+                try {
+                    const response = await fetch('/find_shortest_path', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `source=${encodeURIComponent(source)}&target=${encodeURIComponent(target)}&consider_traffic_time=${considerTrafficTime}&consider_traffic_density=${considerTrafficDensity}`
+                    });
+
+                    const result = await response.json();
+
+                    document.getElementById('path').textContent = `Path: ${result.path.join(' → ')}`;
+                    document.getElementById('distance').textContent = `Distance: ${result.distance} meters`;
+                    document.getElementById('estimated-time').textContent = `Estimated Time: ${result.estimated_time}`;
+                    document.getElementById('traffic-status').textContent = `Traffic Status: ${result.traffic_status}`;
+
+                    highlightPath(result.path);
+
+                } catch (fetchError) {
+                    document.getElementById('error').textContent = "Failed to fetch shortest path.";
+                }
+            });
+
+            function highlightPath(path) {
+                
+                map.eachLayer(function (layer) {
+                    if (!(layer instanceof L.TileLayer)) {
+                        map.removeLayer(layer);
+                    }
+                });
+
+                // Add markers for each node
+                for (let i = 0; i < path.length; i++) {
+                    const node = path[i];
+                    const latLng = nodes[node]["coordinates"];
+                    L.marker(latLng).addTo(map).bindPopup(node);
+                }
+
+
+                // Draw the path
+                for (let i = 0; i < path.length - 1; i++) {
+                    const startNode = path[i];
+                    const endNode = path[i + 1];
+
+                    const sourceLatLng = nodes[startNode]["coordinates"];
+                    const targetLatLng = nodes[endNode]["coordinates"];
+
+                    L.polyline([sourceLatLng, targetLatLng], { color: 'red', weight: 4 }).addTo(map);
+                }
+            }
+        } catch (mapError) {
+            document.getElementById('error').textContent = "Map could not be initialized.";
+        }
+    };
+    </script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const sourceDropdown = document.getElementById("source");
+        const targetDropdown = document.getElementById("target");
+
+        // Function to fetch nodes and populate dropdown
+        async function loadNodes(dropdown) {
+            try {
+                const response = await fetch('/get_nodes');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const nodes = await response.json();
+
+                // Clear existing options
+                dropdown.innerHTML = '<option value="" disabled selected>Select Node</option>';
+
+                // Populate dropdown with nodes
+                nodes.forEach(node => {
+                    const option = document.createElement("option");
+                    option.value = node.name;
+                    option.textContent = node.name;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Failed to load nodes:", error);
+                document.getElementById('error').textContent = "Failed to load nodes.";
+            }
+        }
+
+        // Load nodes for both dropdowns
+        loadNodes(sourceDropdown);
+        loadNodes(targetDropdown);
+    });
+    </script>
+</body>
+</html>
