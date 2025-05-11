@@ -22,23 +22,6 @@
 
 ---
 
-## 📁 Project Structure
-
-DijkstraPathFinder/
-├── algorithms/
-│ └── dijkstra.py
-├── Data/
-│ └── *.csv and data processing scripts
-├── templates/
-│ └── index.html ← Flask uses this
-├── index.html ← For GitHub Pages deployment
-├── app.py ← Main Flask app (for local run)
-├── requirements.txt
-└── README.md
-
-
----
-
 ## ⚙️ Getting Started Locally
 
 ### ✅ Prerequisites
