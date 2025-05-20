@@ -1,6 +1,6 @@
 # Dijkstra Path Finder
 
-**DijkstraPathFinder** is a web-based application for visualizing the shortest path between two locations in District 7, Ho Chi Minh City using Dijkstra's algorithm. The project supports research and exploration in urban planning, traffic analysis, and geospatial computation.
+**DijkstraPathFinder** is a web-based application for visualizing the shortest path between two locations in District 7, Ho Chi Minh City using Dijkstra's algorithm (The Location can be adjusted easily by crawling data from Open Street Map API). The project supports research and exploration in urban planning, traffic analysis, and geospatial computation.
 
 ---
 
