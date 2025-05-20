@@ -17,7 +17,6 @@
 - **Language**: Python
 - **Frontend**: HTML, CSS, JavaScript
 - **Backend**: Flask (for local deployment)
-- **Deployment**: GitHub Pages (frontend only)
 
 ---
 
