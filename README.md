@@ -9,7 +9,6 @@
 - **Dijkstra Algorithm Visualization** on real-world street data of District 7.
 - **Interactive User Interface**: Select source and destination points dynamically.
 - **Shortest Path Display** with total travel distance or time.
-- **Lightweight Deployment** via GitHub Pages (for frontend).
 
 ---
 
